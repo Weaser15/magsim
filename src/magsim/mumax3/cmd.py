@@ -109,8 +109,14 @@ def print_values(*values) -> str:
     return call("Print", *values)
 
 
-def comment(comment: str) -> str:
-    return f"// {comment}"
+def comment(text: str) -> str:
+    return f"// {text}"
+
+
+def header_comment(text: str, total_length: int = 80, fill_symbol: str = "-"):
+    nfill = total_length - len(text) - 2 - 3
+    new_text = " ".join([fill_symbol * 3, text, fill_symbol * (nfill - total_length)])
+    return comment(new_text)
 
 
 def save(var: str) -> str:
@@ -206,6 +212,8 @@ def crop(
 
 
 # --- Statements --------------------------------------------------------------
+
+
 def for_loop(
     var: str,
     start: Any,

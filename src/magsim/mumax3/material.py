@@ -49,3 +49,6 @@ class MagneticMaterial:
             "Kc3": self.Kc3,
         }
         return [emit(var, value) for var, value in var_value.items() if value is not None]
+
+
+permalloy = MagneticMaterial("Permalloy", Msat=8.0e5, Aex=1.3e-11, alpha=8e-3)
