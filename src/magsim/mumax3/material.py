@@ -3,11 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from . import cmds
+from . import cmd
 
 
 def optional_vector(value: tuple | None) -> str | None:
-    return cmds.vector(*value) if value is not None else None
+    return cmd.vector(*value) if value is not None else None
 
 
 @dataclass(frozen=True)
@@ -30,9 +30,9 @@ class MagneticMaterial:
 
         def emit(var: str, value: Any):
             if region is None:
-                return cmds.set_var(var, value)
+                return cmd.set_var(var, value)
             else:
-                return cmds.set_var_region(var, region, value)
+                return cmd.set_var_region(var, region, value)
 
         var_value = {
             "Msat": self.Msat,
