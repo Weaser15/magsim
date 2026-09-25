@@ -59,7 +59,7 @@ class Grid:
         # Add the mask if it is included.
         if (mask := self.mask) is not None:
             commands += [
-                cmd.comment("Define Mask"),
+                cmd.header_comment("Define Mask"),
                 cmd.define_var("mask", cmd.load_mask(mask, absolute=False)),
                 cmd.set_geom("mask"),
                 "",

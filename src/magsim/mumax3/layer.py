@@ -22,6 +22,13 @@ class Layer(ABC):
     @abstractmethod
     def to_script(self, layer_index: int | None = None) -> list[str]: ...
 
+    def __add__(self, other: Layer | LayerGroup):
+        if isinstance(other, Layer):
+            return LayerGroup([self, other])
+        elif all(isinstance(v, Layer) for v in other):
+            return LayerGroup([self, *other])
+        raise ValueError("Can only add Layers with Layers and LayerGroups!")
+
 
 @dataclass(frozen=True)
 class MagneticLayer(Layer):
@@ -260,8 +267,13 @@ class LayerGroup(MutableSequence):
         new_layers = [replace(layer, thickness=layer.ncells(dz) * dz) for layer in self._layers]
         return LayerGroup(new_layers)
 
-    def to_script(self, dz: float, shape: str | None):
+    def assign_regions(self):
+        new_layers = [replace(layer, region=i + 1) for i, layer in enumerate(self)]
+        return LayerGroup(new_layers)
+
+    def to_script(self, dz: float, shape: str | None = None):
         layers = self.round(dz)
+        layers = layers.assign_regions()
         nlayers = len(layers)
 
         commands = []
