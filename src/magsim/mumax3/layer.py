@@ -212,8 +212,9 @@ class RKKYLayer(Layer):
 
 
 class LayerGroup(MutableSequence):
-    def __init__(self, layers: Iterable[Layer] | None = None):
+    def __init__(self, layers: Iterable[Layer] | None = None, dz: float | None = None):
         self._layers = list(layers) if layers is not None else []
+        self._dz = dz
 
     def __getitem__(self, index):
         return self._layers[index]
@@ -237,9 +238,9 @@ class LayerGroup(MutableSequence):
 
     def __add__(self, other: Layer | LayerGroup) -> LayerGroup:
         if isinstance(other, Layer):
-            return LayerGroup([*self, other])
+            return LayerGroup([*self, other], self._dz)
         elif all(isinstance(v, Layer) for v in other):
-            return LayerGroup([*self, *other])
+            return LayerGroup([*self, *other], self._dz)
         else:
             raise ValueError("Can only add LayerGroup with Layer and LayerGroup!")
 
@@ -260,18 +261,36 @@ class LayerGroup(MutableSequence):
             raise ValueError("LayerGroup can only store Layers!")
         self._layers.insert(index, value)
 
-    def total_thickness(self):
+    def total_thickness(self) -> float:
         return sum(layer.thickness for layer in self._layers)
 
-    def round(self, dz: float):
+    @property
+    def nz(self) -> int:
+        if self._dz is None:
+            raise ValueError("Need to assign dz! Currently unassigned.")
+        return round(self.total_thickness() / self._dz)
+
+    def assign_dz(self, dz: float):
+        self._dz = dz
+
+    def get_nz_and_dz(self) -> tuple[int, float]:
+        return self.nz, self._dz  # type: ignore
+
+    def round(self, dz: float | None = None):
+        dz = self._dz if dz is None else dz
+        if dz is None:
+            raise ValueError("Need to input dz! Either as the class parameter or in this method!")
         new_layers = [replace(layer, thickness=layer.ncells(dz) * dz) for layer in self._layers]
-        return LayerGroup(new_layers)
+        return LayerGroup(new_layers, dz)
 
     def assign_regions(self):
         new_layers = [replace(layer, region=i + 1) for i, layer in enumerate(self)]
-        return LayerGroup(new_layers)
+        return LayerGroup(new_layers, self._dz)
 
-    def to_script(self, dz: float, shape: str | None = None):
+    def to_script(self, *, dz: float | None = None, shape: str | None = None):
+        dz = self._dz if dz is None else dz
+        if dz is None:
+            raise ValueError("Need to input dz! Either as the class parameter or in this method!")
         layers = self.round(dz)
         layers = layers.assign_regions()
         nlayers = len(layers)

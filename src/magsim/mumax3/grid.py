@@ -13,10 +13,8 @@ from . import cmd
 class Grid:
     nx: int | str
     ny: int | str
-    nz: int | str
     dx: float | str
     dy: float | str
-    dz: float | str
     pbc: tuple[int, int, int] | str
     edgesmooth: int
     mask: str | Path | None = None
@@ -36,23 +34,21 @@ class Grid:
         filepath = Path(filepath)
         image_shape = np.asarray(Image.open(filepath)).shape
         nx, ny = round(image_shape[1] * resolution / dx), round(image_shape[0] * resolution / dy)
-        return cls(
-            nx=nx, ny=ny, nz=nz, dx=dx, dy=dy, dz=dz, mask=filepath, pbc=pbc, edgesmooth=edgesmooth
-        )
+        return cls(nx=nx, ny=ny, dx=dx, dy=dy, mask=filepath, pbc=pbc, edgesmooth=edgesmooth)
 
-    def to_script(self) -> list[str]:
+    def to_script(self, nz: int, dz: float) -> list[str]:
         commands = [
             cmd.header_comment("Define Grid Geometry"),
             cmd.comment("Define Number of Cells"),
             cmd.define_var("nx", self.nx),
             cmd.define_var("ny", self.ny),
-            cmd.define_var("nz", self.nz),
+            cmd.define_var("nz", nz),
             cmd.set_grid_size("nx", "ny", "nz"),
             "",
             cmd.header_comment("Define Cell Sizes"),
             cmd.define_var("dx", self.dx),
             cmd.define_var("dy", self.dy),
-            cmd.define_var("dz", self.dz),
+            cmd.define_var("dz", dz),
             cmd.set_cell_size("dx", "dy", "dz"),
             "",
         ]
