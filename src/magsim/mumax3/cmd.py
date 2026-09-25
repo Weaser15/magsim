@@ -203,6 +203,18 @@ def timestamp(message: str = "Time:"):
     return print_values(message, call("Now"))
 
 
+def comp(var: str, axis: int | None):
+    if axis is None:
+        return var
+    return var_call(var, "Comp", axis)
+
+
+def crop_layers(var: str, layer: int | str | None):
+    if layer is None:
+        return var
+    return call("CropLayer", var, layer)
+
+
 def crop(
     var: Any,
     x1: int | str,

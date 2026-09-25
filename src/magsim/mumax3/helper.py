@@ -33,6 +33,8 @@ def hysteresis(
     save_names: tuple[str] = ("m",),
     B_save: float | None = None,
     *,
+    save_by_regions: bool = False,
+    comp: int | None = None,
     relaxation_mechanism: list[str] | None = None,
     save_bool_name: str = "save_m",
     extra_commands: list[str] | None = None,
@@ -49,10 +51,26 @@ def hysteresis(
     hyst_commands = []
     hyst_commands += relaxation_mechanism
     # Save magnetisation states (and others, e.g. demag)
+    save_layers = layers.get_floor_layer_names() if save_by_regions else None
     if B_save is None:
-        hyst_commands += save_states(save_names, True, True, save_bool_name)
+        hyst_commands += save_states(
+            save_names,
+            comp=comp,
+            save_m=True,
+            tablesave=True,
+            save_m_name=save_bool_name,
+            layers=save_layers,
+        )
     else:
-        hyst_commands += conditional_save_states(save_names, B_save, True, True, save_bool_name)
+        hyst_commands += conditional_save_states(
+            save_names,
+            B_save,
+            comp=comp,
+            save_m=True,
+            tablesave=True,
+            save_m_name=save_bool_name,
+            layers=save_layers,
+        )
     hyst_commands += extra_commands
 
     commands += hysteresis_block(B_start, B_stop, B_step, phi, hyst_commands)

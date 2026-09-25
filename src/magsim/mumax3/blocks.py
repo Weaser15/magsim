@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from itertools import product
 from pathlib import Path
 
 import numpy as np
@@ -128,9 +129,20 @@ def conditional_run_relax(
 
 
 def save_states(
-    names: Iterable[str], save_m: bool = True, tablesave: bool = True, save_m_name: str = "save_m"
-):
-    commands = [cmd.save(name) for name in names]
+    names: Iterable[str],
+    save_m: bool = True,
+    tablesave: bool = True,
+    save_m_name: str = "save_m",
+    comp: int | None = None,
+    layers: int | str | list | None = None,
+) -> list[str]:
+
+    if isinstance(layers, int | str | None):
+        layers = [layers]
+
+    commands = []
+    for name, layer in product(names, layers):
+        commands.append(cmd.save(cmd.crop_layers(cmd.comp(name, comp), layer)))
     if tablesave:
         commands.append(cmd.table_save())
     if save_m:
@@ -144,9 +156,16 @@ def conditional_save_states(
     save_m: bool = True,
     tablesave: bool = True,
     save_m_name: str = "save_m",
-):
+    comp: int | None = None,
+    layers: int | str | list | None = None,
+) -> list[str]:
     if_commands = save_states(
-        names=names, save_m=save_m, tablesave=tablesave, save_m_name=save_m_name
+        names=names,
+        save_m=save_m,
+        tablesave=tablesave,
+        save_m_name=save_m_name,
+        comp=comp,
+        layers=layers,
     )
     return [
         cmd.if_statement(

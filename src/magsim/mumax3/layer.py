@@ -65,6 +65,7 @@ class MagneticLayer(Layer):
 class RKKYLayer(Layer):
     J1: float
     J2: float
+    region: int | None = None
 
     def to_script(
         self,
@@ -284,8 +285,16 @@ class LayerGroup(MutableSequence):
         return LayerGroup(new_layers, dz)
 
     def assign_regions(self):
+        if len(self) == 1:
+            return LayerGroup(self._layers, self._dz)
         new_layers = [replace(layer, region=i + 1) for i, layer in enumerate(self)]
         return LayerGroup(new_layers, self._dz)
+
+    def get_regions(self):
+        return [layer.region for layer in self._layers]  # type: ignore
+
+    def get_floor_layer_names(self):
+        return [FLOOR_LAYER_TEMPLATE.format(i + 1) for i in range(len(self))]
 
     def to_script(self, *, dz: float | None = None, shape: str | None = None):
         dz = self._dz if dz is None else dz
@@ -309,11 +318,15 @@ class LayerGroup(MutableSequence):
         ]
         commands.append("")
 
-        for i, layer in enumerate(layers):
-            if not isinstance(layer, MagneticLayer):
-                continue
-            commands += layer.to_script(layer_index=i + 1, shape=shape)
+        if len(layers) == 1:
+            commands += layers[0].to_script(layer_index=None, shape=shape)
             commands.append("")
+        else:
+            for i, layer in enumerate(layers):
+                if not isinstance(layer, MagneticLayer):
+                    continue
+                commands += layer.to_script(layer_index=i + 1, shape=shape)
+                commands.append("")
 
         for i, layer in enumerate(layers):
             if isinstance(layer, MagneticLayer):
