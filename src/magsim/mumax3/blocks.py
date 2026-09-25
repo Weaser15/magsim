@@ -11,6 +11,10 @@ from .grid import Grid
 from .layer import LayerGroup, MagneticLayer
 
 
+def tableadd_multiple(variables: Iterable[str]) -> list[str]:
+    return [cmd.table_add(var) for var in variables]
+
+
 def init_simspace(
     layers: LayerGroup,
     grid: Grid,

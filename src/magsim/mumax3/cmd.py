@@ -64,7 +64,7 @@ def table_add(var: str) -> str:
 
 
 def table_add_var(var: str, name: str, unit: str) -> str:
-    return call("TableAddVar", f'"{name}"', f'"{unit}"')
+    return call("TableAddVar", var, f'"{name}"', f'"{unit}"')
 
 
 def add_field_term(var: str) -> str:

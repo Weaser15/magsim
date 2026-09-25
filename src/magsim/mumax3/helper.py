@@ -9,9 +9,22 @@ from .blocks import (
     hysteresis_block,
     init_simspace,
     save_states,
+    tableadd_multiple,
 )
 from .grid import Grid
 from .layer import LayerGroup, layer_dict
+
+
+def tableadd_common(regions: list[int] | None = None) -> list[str]:
+    variables = ["B_ext", "E_demag", "E_exch", "E_Zeeman", "E_anis", "E_total"]
+    if regions is not None:
+        variables += [cmd.get_var_region("m", i) for i in regions if i is not None]
+    return [
+        cmd.header_comment("Add Variables to Table"),
+        *tableadd_multiple(variables),
+        cmd.table_add_var("save_m", "save_m", ""),
+        "",
+    ]
 
 
 def create_stack_by_name(
@@ -47,6 +60,7 @@ def hysteresis(
     commands = []
     commands.append(cmd.timestamp())
     commands += init_simspace(layers, grid)
+    commands += tableadd_common(regions=layers.get_regions())
 
     hyst_commands = []
     hyst_commands += relaxation_mechanism
