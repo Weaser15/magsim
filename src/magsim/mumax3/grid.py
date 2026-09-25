@@ -24,10 +24,8 @@ class Grid:
         cls,
         filepath: Path | str,
         resolution: float,
-        nz: int,
         dx: float,
         dy: float,
-        dz: float,
         pbc: tuple[int, int, int],
         edgesmooth: int,
     ) -> Grid:

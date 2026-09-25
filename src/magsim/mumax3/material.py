@@ -52,3 +52,4 @@ class MagneticMaterial:
 
 
 permalloy = MagneticMaterial("Permalloy", Msat=8.0e5, Aex=1.3e-11, alpha=8e-3)
+empty = MagneticMaterial("Empty", Msat=0.0, Aex=0.0, alpha=0.0)

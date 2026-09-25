@@ -6,7 +6,7 @@ from dataclasses import dataclass, replace
 from typing import Any
 
 from . import cmd
-from .material import MagneticMaterial
+from .material import MagneticMaterial, empty
 
 NCELLS_LAYER_TEMPLATE = "n_l{}"
 FLOOR_LAYER_TEMPLATE = "z_l{}"
@@ -59,6 +59,10 @@ class MagneticLayer(Layer):
                 cmd.define_region(self.region, layer_shape),
             ]
         return [*commands, *self.material.to_script(self.region), ""]
+
+
+def empty_layer(thickness: float):
+    return MagneticLayer(thickness, material=empty)
 
 
 @dataclass(frozen=True)
