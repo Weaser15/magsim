@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Iterable, MutableSequence
+from collections.abc import Callable, Iterable, MutableSequence
 from dataclasses import dataclass, replace
 from typing import Any
 
 from . import cmd
-from .material import MagneticMaterial, empty
+from .material import MagneticMaterial, empty, permalloy
 
 NCELLS_LAYER_TEMPLATE = "n_l{}"
 FLOOR_LAYER_TEMPLATE = "z_l{}"
@@ -59,10 +59,6 @@ class MagneticLayer(Layer):
                 cmd.define_region(self.region, layer_shape),
             ]
         return [*commands, *self.material.to_script(self.region), ""]
-
-
-def empty_layer(thickness: float):
-    return MagneticLayer(thickness, material=empty)
 
 
 @dataclass(frozen=True)
@@ -348,3 +344,17 @@ class LayerGroup(MutableSequence):
                 property_ = getattr(layer.material, key)
                 properties.append((region, property_))
         return properties
+
+
+def empty_layer(thickness: float):
+    return MagneticLayer(thickness, material=empty)
+
+
+def permalloy_layer(thickness: float):
+    return MagneticLayer(thickness, material=permalloy)
+
+
+layer_dict: dict[str, Callable] = {
+    "permalloy": permalloy_layer,
+    "empty": empty_layer,
+}
