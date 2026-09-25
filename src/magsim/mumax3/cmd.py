@@ -24,6 +24,10 @@ def set_indent(text: str, level: int) -> str:
 # --- Templates ---------------------------------------------------------------
 
 
+def fmt(value: Any) -> str:
+    return str(value)
+
+
 def define_var(var: str, value: Any):
     return f"{var} := {value}"
 
@@ -33,7 +37,7 @@ def set_var(var: str, value: Any):
 
 
 def call(fn: str, *args):
-    return f"{fn}({', '.join(a for a in args)})"
+    return f"{fn}({', '.join(fmt(a) for a in args)})"
 
 
 def var_call(var: str, fn: str, *args):
@@ -115,7 +119,7 @@ def comment(text: str) -> str:
 
 def header_comment(text: str, total_length: int = 80, fill_symbol: str = "-"):
     nfill = total_length - len(text) - 2 - 3
-    new_text = " ".join([fill_symbol * 3, text, fill_symbol * (nfill - total_length)])
+    new_text = " ".join([fill_symbol * 3, text, fill_symbol * nfill])
     return comment(new_text)
 
 

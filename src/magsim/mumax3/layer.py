@@ -32,7 +32,7 @@ class MagneticLayer(Layer):
         commands = []
         if self.region is None and layer_index is None:
             # Case 1: No regions defined - only one material.
-            commands.append(cmd.header_comment("Define Global Material: {self.material.name}"))
+            commands.append(cmd.header_comment(f"Define Global Material: {self.material.name}"))
         elif self.region is None or layer_index is None:
             raise ValueError(
                 f"Layer is partially resolved - region: {self.region}, layer_index: {layer_index}"

@@ -56,3 +56,9 @@ docstring-code-format = true
 
 [tool.uv]
   link-mode = "copy"
+
+[dependency-groups]
+dev = [
+    "jupyter>=1.1.1",
+    "notebook>=7.6.3",
+]

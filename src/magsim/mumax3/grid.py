@@ -49,7 +49,7 @@ class Grid:
             cmd.define_var("nz", self.nz),
             cmd.set_grid_size("nx", "ny", "nz"),
             "",
-            cmd.comment("Define Cell Sizes"),
+            cmd.header_comment("Define Cell Sizes"),
             cmd.define_var("dx", self.dx),
             cmd.define_var("dy", self.dy),
             cmd.define_var("dz", self.dz),

@@ -29,17 +29,19 @@ def hysteresis(
     ]
 
     hyst_commands = [
-        cmd.header_comment("Start Hysteresis"),
+        cmd.header_comment("Define Hysteresis Parameters"),
         cmd.define_var(B_start_str, B_start),
         cmd.define_var(B_stop_str, B_stop),
         cmd.define_var(B_step_str, B_step),
         cmd.define_var("phi", f"{phi} * (pi / 180.0)"),
         "",
+        cmd.header_comment("Relax to Initial State"),
         cmd.set_var(
             B_ext_str, cmd.vector(f"{B_start_str} * {xangle}", f"{B_start_str} * {yangle}", 0)
         ),
         cmd.relax(),
         "",
+        cmd.header_comment("Begin Hysteresis"),
         cmd.for_loop(
             var=var,
             start=B_start_str,
@@ -218,7 +220,11 @@ def excitation(
 
 
 def load_magstate(
-    dirpath: Path | str, index: int, var: str = "B_bias", saveboolname: str = "save_m ()"
+    dirpath: Path | str,
+    index: int,
+    var: str = "B_bias",
+    saveboolname: str = "save_m ()",
+    absolute: bool = True,
 ) -> list[str]:
     """Load the magstate with correct field."""
     dirpath = Path(dirpath)
@@ -239,7 +245,7 @@ def load_magstate(
     filepath = dirpath / f"m{index:06d}.ovf"
     commands = [
         cmd.header_comment("Load Magnetisation from File"),
-        cmd.set_var("m", cmd.load_file(filepath.absolute())),
+        cmd.set_var("m", cmd.load_file(filepath, absolute)),
         cmd.define_var(var, cmd.vector(*field)),
         cmd.set_var("B_ext", var),
         "",
