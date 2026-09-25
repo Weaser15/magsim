@@ -180,8 +180,12 @@ def conditional_save_states(
 
 def define_excitation(
     fc: float,
+    t_run: float,
     t0: float,
     amp: float,
+    direction: tuple[float, float, float] = (0, 0, 1.0),
+    maxerr: float = 1e-7,
+    maxdt: float | str = "t_step / 10",
     kc: float | None = None,
     xpulse: int = 0,
     ypulse: int = 0,
@@ -189,11 +193,13 @@ def define_excitation(
     commands = []
     commands += [
         cmd.define_var("fc", fc),
-        cmd.define_var("t0", t0),
+        cmd.define_var("t0", t_run),
         cmd.define_var("t_step", "1. / (2 * fc)"),
-        cmd.define_var("t_pulse", "t0 * 0.1"),
+        cmd.define_var("t0", t0),
         cmd.define_var("amp", amp),
-        "",
+        cmd.define_var("direction", cmd.vector(*direction)),
+        cmd.set_var("MaxDt", maxdt),
+        cmd.set_var("MaxErr", maxerr),
     ]
 
     if kc is not None:
@@ -215,6 +221,7 @@ def run_excitation(
 ) -> list[str]:
 
     commands = []
+    sinc_pulse = cmd.sinc("2 * pi * fc * (t - t0)")
     if use_kc:
         for_commands = [
             cmd.define_var("r", cmd.index_to_coord("i", "j", 0)),
@@ -236,22 +243,34 @@ def run_excitation(
         )
         commands += [
             for_loop1,
-            "B_ext." + cmd.add("field_mask", f"amp * {cmd.sinc('2 * pi * fc * (t - t_pulse)')}"),
+            "B_ext." + cmd.add("field_mask", f"amp * {sinc_pulse}"),
         ]
     else:
-        commands += [cmd.set_var("B_ext", f"amp * {cmd.sinc('2 * pi * fc * (t - t_pulse)')}")]
+        commands += [
+            cmd.set_var(
+                "B_ext",
+                cmd.var_add("B_bias", cmd.var_mul(cmd.var_mul("direction", "amp"), sinc_pulse)),
+            )
+        ]
 
-    run_commands = [cmd.table_autosave("t_step"), cmd.autosave(save_var, "t_step"), cmd.run("t0")]
+    run_commands = [
+        cmd.table_autosave("t_step"),
+        cmd.autosave(save_var, "t_step"),
+        cmd.run("t_run - t_step"),
+    ]
     if save_m:
         run_commands = [cmd.set_var("save_m", 1), *run_commands, cmd.set_var("save_m", 0)]
     commands += run_commands
     return commands
 
 
-def excitation(
+def excitation_block(
     fc: float,
-    t0: float,
+    t_run: float,
     amp: float,
+    t0: float,
+    maxerr: float = 1e-7,
+    maxdt: float | str = "t_step / 10",
     kc: float | None = None,
     xpulse: int = 0,
     ypulse: int = 0,
@@ -260,7 +279,17 @@ def excitation(
 ) -> list[str]:
     commands = []
 
-    commands += define_excitation(fc=fc, t0=t0, amp=amp, kc=kc, xpulse=xpulse, ypulse=ypulse)
+    commands += define_excitation(
+        fc=fc,
+        t_run=t_run,
+        amp=amp,
+        t0=t0,
+        maxerr=maxerr,
+        maxdt=maxdt,
+        kc=kc,
+        xpulse=xpulse,
+        ypulse=ypulse,
+    )
     commands += run_excitation(use_kc=kc is not None, save_var=save_var, save_m=save_m)
 
     return commands

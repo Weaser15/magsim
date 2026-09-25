@@ -171,6 +171,14 @@ def mul(var1: Any, var2: Any) -> str:
     return call("Mul", var1, var2)
 
 
+def var_add(var1: Any, var2: Any) -> str:
+    return var_call(var1, "Add", var2)
+
+
+def var_mul(var1: Any, var2: Any) -> str:
+    return var_call(var1, "Mul", var2)
+
+
 def shifted(var: str, x: int | str, y: int | str, z: int | str) -> str:
     return call("Shifted", var, x, y, z)
 

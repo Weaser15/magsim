@@ -6,6 +6,7 @@ from pathlib import Path
 from . import cmd
 from .blocks import (
     conditional_save_states,
+    excitation_block,
     hysteresis_block,
     init_simspace,
     save_states,
@@ -97,11 +98,33 @@ def excitation(
     grid: Grid,
     dirpath: Path | str,
     index: int,
+    save_names: tuple[str] = ("m",),
     *,
+    save_by_regions: bool = True,
+    comp: int | None = 2,
+    fc: float = 30e9,
+    t_run: float = 10e-9,
+    t0: float = 0.5e-9,
+    amp: float = 1e-3,
+    kc: float | None = None,
+    xpulse: int = 0,
+    ypulse: int = 0,
     save_bool_name: str = "save_m",
 ):
     commands = []
     commands.append(cmd.timestamp())
+    commands += init_simspace(layers, grid)
     commands += init_simspace(
         layers, grid, dirpath=dirpath, index=index, saveboolname=save_bool_name
     )
+    commands += tableadd_common(regions=layers.get_regions())
+    commands += excitation_block(
+        fc=fc,
+        t_run=t_run,
+        amp=amp,
+        t0=t0,
+        kc=kc,
+        xpulse=xpulse,
+        ypulse=ypulse,
+    )
+    return commands
