@@ -15,7 +15,7 @@ class Grid:
     ny: int | str
     dx: float | str
     dy: float | str
-    pbc: tuple[int, int, int] | str
+    pbc: tuple[int, int, int]
     edgesmooth: int
     mask: str | Path | None = None
 
@@ -48,6 +48,10 @@ class Grid:
             cmd.define_var("dy", self.dy),
             cmd.define_var("dz", dz),
             cmd.set_cell_size("dx", "dy", "dz"),
+            "",
+            cmd.header_comment("Set PBC and EdgeSmooth"),
+            cmd.set_pbc(*self.pbc),
+            cmd.set_var("EdgeSmooth", self.edgesmooth),
             "",
         ]
         # Add the mask if it is included.

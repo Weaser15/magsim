@@ -23,6 +23,7 @@ def tableadd_common(regions: list[int] | None = None) -> list[str]:
     return [
         cmd.header_comment("Add Variables to Table"),
         *tableadd_multiple(variables),
+        cmd.define_var("save_m", 0),
         cmd.table_add_var("save_m", "save_m", ""),
         "",
     ]
@@ -113,11 +114,11 @@ def excitation(
 ):
     commands = []
     commands.append(cmd.timestamp())
-    commands += init_simspace(layers, grid)
     commands += init_simspace(
         layers, grid, dirpath=dirpath, index=index, saveboolname=save_bool_name
     )
     commands += tableadd_common(regions=layers.get_regions())
+    save_layers = layers.get_floor_layer_names() if save_by_regions else None
     commands += excitation_block(
         fc=fc,
         t_run=t_run,
@@ -126,5 +127,9 @@ def excitation(
         kc=kc,
         xpulse=xpulse,
         ypulse=ypulse,
+        comp=comp,
+        layers=save_layers,
+        save_vars=save_names,
     )
+    commands.append(cmd.timestamp())
     return commands

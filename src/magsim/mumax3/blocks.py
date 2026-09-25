@@ -137,6 +137,7 @@ def save_states(
     save_m: bool = True,
     tablesave: bool = True,
     save_m_name: str = "save_m",
+    autosave_interval: str | float | None = None,
     comp: int | None = None,
     layers: int | str | list | None = None,
 ) -> list[str]:
@@ -146,7 +147,12 @@ def save_states(
 
     commands = []
     for name, layer in product(names, layers):
-        commands.append(cmd.save(cmd.crop_layers(cmd.comp(name, comp), layer)))
+        if autosave_interval is None:
+            commands.append(cmd.save(cmd.crop_layers(cmd.comp(name, comp), layer)))
+        else:
+            commands.append(
+                cmd.autosave(cmd.crop_layers(cmd.comp(name, comp), layer), autosave_interval)
+            )
     if tablesave:
         commands.append(cmd.table_save())
     if save_m:
@@ -190,20 +196,22 @@ def define_excitation(
     xpulse: int = 0,
     ypulse: int = 0,
 ) -> list[str]:
-    commands = []
+    commands = [cmd.header_comment("Define Excitation Parameters")]
     commands += [
         cmd.define_var("fc", fc),
-        cmd.define_var("t0", t_run),
+        cmd.define_var("t_run", t_run),
         cmd.define_var("t_step", "1. / (2 * fc)"),
         cmd.define_var("t0", t0),
         cmd.define_var("amp", amp),
         cmd.define_var("direction", cmd.vector(*direction)),
         cmd.set_var("MaxDt", maxdt),
         cmd.set_var("MaxErr", maxerr),
+        "",
     ]
 
     if kc is not None:
         commands += [
+            cmd.header_comment("Define Spatial Mask Parameters"),
             cmd.define_var("kc", kc),
             cmd.define_var("xpulse", xpulse),
             cmd.define_var("ypulse", ypulse),
@@ -216,13 +224,20 @@ def define_excitation(
 
 def run_excitation(
     use_kc: bool = False,
-    save_var: str = "m",
+    save_vars: Iterable[str] = ("m",),
     save_m: bool = True,
+    comp: int | None = 2,
+    layers: int | str | list | None = None,
 ) -> list[str]:
 
-    commands = []
+    commands = [cmd.header_comment("Run Excitation")]
     sinc_pulse = cmd.sinc("2 * pi * fc * (t - t0)")
     if use_kc:
+        set_mask = cmd.set_vector("field_mask", "i", "j", "k2", cmd.vector(0, 0, "Bmask"))
+        for_loop3 = cmd.for_loop(
+            "k", start=0, condition="nz", step=1, operator="<", commands=[set_mask]
+        )
+
         for_commands = [
             cmd.define_var("r", cmd.index_to_coord("i", "j", 0)),
             cmd.define_var("x", "r.X()"),
@@ -233,8 +248,9 @@ def run_excitation(
                     f"kc * {cmd.sqrt('(x - xpulse) * (x - xpulse) + (y - ypulse) * (y - ypulse)')}"
                 ),
             ),
-            cmd.set_vector("field_mask", "i", "j", 0, cmd.vector(0, 0, "Bmask")),
+            for_loop3,
         ]
+
         for_loop2 = cmd.for_loop(
             "j", start=0, condition="ny", step=1, operator="<", commands=for_commands
         )
@@ -255,7 +271,14 @@ def run_excitation(
 
     run_commands = [
         cmd.table_autosave("t_step"),
-        cmd.autosave(save_var, "t_step"),
+        *save_states(
+            save_vars,
+            save_m=False,
+            tablesave=False,
+            autosave_interval="t_step",
+            comp=comp,
+            layers=layers,
+        ),
         cmd.run("t_run - t_step"),
     ]
     if save_m:
@@ -274,7 +297,9 @@ def excitation_block(
     kc: float | None = None,
     xpulse: int = 0,
     ypulse: int = 0,
-    save_var: str = "m",
+    save_vars: Iterable[str] = ("m",),
+    comp: int | None = 2,
+    layers: int | str | list | None = None,
     save_m: bool = True,
 ) -> list[str]:
     commands = []
@@ -290,7 +315,9 @@ def excitation_block(
         xpulse=xpulse,
         ypulse=ypulse,
     )
-    commands += run_excitation(use_kc=kc is not None, save_var=save_var, save_m=save_m)
+    commands += run_excitation(
+        use_kc=kc is not None, save_vars=save_vars, save_m=save_m, comp=comp, layers=layers
+    )
 
     return commands
 
@@ -321,9 +348,10 @@ def load_magstate(
     filepath = dirpath / f"m{index:06d}.ovf"
     commands = [
         cmd.header_comment("Load Magnetisation from File"),
-        cmd.set_var("m", cmd.load_file(filepath, absolute)),
+        cmd.m_load_file(filepath, absolute),
         cmd.define_var(var, cmd.vector(*field)),
         cmd.set_var("B_ext", var),
+        cmd.relax(),
         "",
     ]
     return commands

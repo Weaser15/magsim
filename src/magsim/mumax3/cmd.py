@@ -4,6 +4,8 @@ from collections.abc import Collection
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+
 INDENT = "    "
 
 # --- Utility functions -------------------------------------------------------
@@ -25,15 +27,18 @@ def set_indent(text: str, level: int) -> str:
 
 
 def fmt(value: Any) -> str:
-    return str(value)
+    if isinstance(value, float):
+        return np.format_float_scientific(value, trim="-", sign=False)
+    else:
+        return str(value)
 
 
 def define_var(var: str, value: Any):
-    return f"{var} := {value}"
+    return f"{var} := {fmt(value)}"
 
 
 def set_var(var: str, value: Any):
-    return f"{var} = {value}"
+    return f"{var} = {fmt(value)}"
 
 
 def call(fn: str, *args):
@@ -95,6 +100,10 @@ def load_mask(filepath: str | Path, absolute: bool = False) -> str:
 def load_file(filepath: str | Path, absolute: bool = False) -> str:
     resolved = filepath if absolute else Path(filepath).name
     return call("LoadFile", f'"{resolved}"')
+
+
+def m_load_file(filepath: str | Path, absolute: bool = False) -> str:
+    return "m." + load_file(filepath, absolute)
 
 
 def set_geom(value: Any) -> str:
@@ -208,7 +217,7 @@ def sqrt(value: Any):
 
 
 def timestamp(message: str = "Time:"):
-    return print_values(message, call("Now"))
+    return print_values(f'"{message}"', call("Now"))
 
 
 def comp(var: str, axis: int | None):

@@ -291,7 +291,8 @@ class LayerGroup(MutableSequence):
         return LayerGroup(new_layers, self._dz)
 
     def get_regions(self):
-        return [layer.region for layer in self._layers]  # type: ignore
+        layers = self.assign_regions()
+        return [layer.region for layer in layers]  # type: ignore
 
     def get_floor_layer_names(self):
         return [FLOOR_LAYER_TEMPLATE.format(i + 1) for i in range(len(self))]
