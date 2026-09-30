@@ -20,9 +20,7 @@ def initialise_space(layers, grid, materials, mask):
     for key, mat in materials.items():
         mat = mat.copy()
         mat_type = mat.pop("type")
-        if mat_type is None:
-            material = empty
-        elif mat_type.lower() == "magnetic":
+        if mat_type.lower() == "magnetic":
             material = MagneticMaterial(**mat)
         else:
             raise NotImplementedError("Only supports None or `magnetic`!")
@@ -32,10 +30,13 @@ def initialise_space(layers, grid, materials, mask):
     lrs = []
     for layer in layers:
         thickness = layer["thickness_nm"] * 1e-9
+        material = layer["material"]
+        if material is None:
+            material = empty
         if "rkky" in layer:
             lr = RKKYLayer(J1=layer["J1"], J2=layer["J2"], thickness=thickness)
         else:
-            lr = MagneticLayer(thickness=thickness, material=mats[layer["material"]])
+            lr = MagneticLayer(thickness=thickness, material=material)
         lrs.append(lr)
     lrs = LayerGroup(lrs)
     lrs.assign_dz(dz)
