@@ -19,8 +19,7 @@ def initialise_space(layers, grid, materials, mask):
     mats = {}
     for key, mat in materials.items():
         mat = mat.copy()
-        mat_type = mat.pop("name")
-        print(mat_type)
+        mat_type = mat.pop("type")
         if mat_type is None:
             material = empty
         elif mat_type.lower() == "magnetic":
