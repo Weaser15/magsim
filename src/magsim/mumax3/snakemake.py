@@ -5,6 +5,7 @@ from .material import MagneticMaterial, empty
 
 def initialise_space(layers, grid, materials, mask):
     # Set up grid
+    print(mask)
     gd = Grid.from_mask(
         mask,
         grid["nm_per_px"] * 1e-9,
