@@ -58,7 +58,7 @@ class Grid:
         if (mask := self.mask) is not None:
             commands += [
                 cmd.header_comment("Define Mask"),
-                cmd.define_var("mask", cmd.load_mask(mask, absolute=False)),
+                cmd.define_var("mask", cmd.load_mask(mask, absolute=True)),
                 cmd.set_geom("mask"),
                 "",
             ]

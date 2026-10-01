@@ -30,9 +30,7 @@ def initialise_space(layers, grid, materials, mask):
     lrs = []
     for layer in layers:
         thickness = layer["thickness_nm"] * 1e-9
-        material = layer["material"]
-        if material is None:
-            material = empty
+        material = empty if layer["material"] is None else mats[layer["material"]]
         if "rkky" in layer:
             lr = RKKYLayer(J1=layer["J1"], J2=layer["J2"], thickness=thickness)
         else:

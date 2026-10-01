@@ -64,6 +64,10 @@ def get_var_region(var: str, region: int) -> str:
     return var_call(var, "GetRegion", region)
 
 
+def var_region(var: str, region: int) -> str:
+    return var_call(var, "Region", region)
+
+
 def table_add(var: str) -> str:
     return call("TableAdd", var)
 

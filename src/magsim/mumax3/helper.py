@@ -19,7 +19,7 @@ from .layer import LayerGroup, layer_dict
 def tableadd_common(regions: list[int] | None = None) -> list[str]:
     variables = ["B_ext", "E_demag", "E_exch", "E_Zeeman", "E_anis", "E_total"]
     if regions is not None:
-        variables += [cmd.get_var_region("m", i) for i in regions if i is not None]
+        variables += [cmd.var_region("m", i) for i in regions if i is not None]
     return [
         cmd.header_comment("Add Variables to Table"),
         *tableadd_multiple(variables),
