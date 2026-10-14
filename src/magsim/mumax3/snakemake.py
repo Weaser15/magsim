@@ -1,13 +1,26 @@
+import numpy as np
+
 from .grid import Grid
 from .layer import LayerGroup, MagneticLayer, RKKYLayer
 from .material import MagneticMaterial, empty
+
+
+def convert_iterable(var: dict | list) -> list:
+    # Convert dict to a list
+    if isinstance(var, dict):
+        start, stop, step = var.get("start"), var.get("stop"), var.get("step")
+        if not isinstance(start, int | float):
+            raise ValueError("`start` not defined in iterable!")
+        return np.round(np.arange(start, stop, step), 9).tolist()
+    # Else return the list
+    return list(var)
 
 
 def initialise_space(layers, grid, materials, mask):
     # Set up grid
     gd = Grid.from_mask(
         mask,
-        grid["nm_per_px"] * 1e-9,
+        grid["px_size_nm"] * 1e-9,
         grid["dx_nm"] * 1e-9,
         grid["dy_nm"] * 1e-9,
         tuple(grid["pbc"]),
