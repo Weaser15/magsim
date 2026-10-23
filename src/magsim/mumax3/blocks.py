@@ -39,7 +39,12 @@ def init_simspace(
 
 
 def hysteresis_block(
-    B_start: float, B_stop: float, B_step: float, phi: float, commands: list[str]
+    B_start: float,
+    B_stop: float,
+    B_step: float,
+    phi: float,
+    m_initial: str | None,
+    commands: list[str],
 ) -> list[str]:
 
     operator = ">=" if B_start - B_stop > 0 else "<="
@@ -51,6 +56,7 @@ def hysteresis_block(
     xangle = "cos(phi)"
     yangle = "sin(phi)"
     var = "B"
+    m_initial = cmd.random_mag() if m_initial is None else m_initial
 
     forloop_commands = [
         cmd.set_var(B_ext_str, cmd.vector(f"{var} * {xangle}", f"{var} * {yangle}", 0)),
@@ -65,6 +71,7 @@ def hysteresis_block(
         cmd.define_var("phi", f"{phi} * (pi / 180.0)"),
         "",
         cmd.header_comment("Relax to Initial State"),
+        cmd.set_var("m", m_initial),
         cmd.set_var(
             B_ext_str, cmd.vector(f"{B_start_str} * {xangle}", f"{B_start_str} * {yangle}", 0)
         ),

@@ -47,6 +47,7 @@ def hysteresis(
     phi: float,
     save_names: tuple[str] = ("m",),
     B_save: float | None = None,
+    m_initial: str | None = None,
     *,
     save_by_regions: bool = False,
     comp: int | None = None,
@@ -89,7 +90,7 @@ def hysteresis(
         )
     hyst_commands += extra_commands
 
-    commands += hysteresis_block(B_start, B_stop, B_step, phi, hyst_commands)
+    commands += hysteresis_block(B_start, B_stop, B_step, phi, m_initial, hyst_commands)
     commands.append(cmd.timestamp())
     return commands
 

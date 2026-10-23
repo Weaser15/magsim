@@ -52,6 +52,10 @@ def var_call(var: str, fn: str, *args):
 # --- Mumax3 ------------------------------------------------------------------
 
 
+def random_mag() -> str:
+    return call("RandomMag", "")
+
+
 def define_region(region: int, value: Any) -> str:
     return call("DefRegion", region, value)
 
