@@ -73,7 +73,8 @@ def hysteresis_block(
         cmd.header_comment("Relax to Initial State"),
         cmd.set_var("m", m_initial),
         cmd.set_var(
-            B_ext_str, cmd.vector(f"{B_start_str} * {xangle}", f"{B_start_str} * {yangle}", 0)
+            B_ext_str,
+            cmd.vector(f"{B_start_str} * {xangle}", f"{B_start_str} * {yangle}", 0),
         ),
         cmd.relax(),
         "",
@@ -102,10 +103,12 @@ def run_relax(
     if isinstance(layers, LayerGroup):
         old_region_alphas = layers.get_magnetic_layers_property("alpha")
         set_to_old = [
-            cmd.set_var_region("alpha", region, alpha) for region, alpha in old_region_alphas
+            cmd.set_var_region("alpha", region, alpha)
+            for region, alpha in old_region_alphas
         ]
         set_to_new = [
-            cmd.set_var_region("alpha", region, alpha2) for region, _ in old_region_alphas
+            cmd.set_var_region("alpha", region, alpha2)
+            for region, _ in old_region_alphas
         ]
     elif isinstance(layers, MagneticLayer):
         set_to_old = [cmd.set_var("alpha", layers.material.alpha)]
@@ -133,9 +136,13 @@ def conditional_run_relax(
     relax_func: str = cmd.minimize(),
 ) -> list[str]:
 
-    if_commands = run_relax(layers=layers, t1=t1, alpha2=alpha2, t2=t2, relax_func=relax_func)
+    if_commands = run_relax(
+        layers=layers, t1=t1, alpha2=alpha2, t2=t2, relax_func=relax_func
+    )
     return [
-        cmd.if_statement(f"abs(B) <= {B_run}", commands=if_commands, else_commands=[relax_func])
+        cmd.if_statement(
+            f"abs(B) <= {B_run}", commands=if_commands, else_commands=[relax_func]
+        )
     ]
 
 
@@ -158,7 +165,9 @@ def save_states(
             commands.append(cmd.save(cmd.crop_layers(cmd.comp(name, comp), layer)))
         else:
             commands.append(
-                cmd.autosave(cmd.crop_layers(cmd.comp(name, comp), layer), autosave_interval)
+                cmd.autosave(
+                    cmd.crop_layers(cmd.comp(name, comp), layer), autosave_interval
+                )
             )
     if tablesave:
         commands.append(cmd.table_save())
@@ -186,7 +195,9 @@ def conditional_save_states(
     )
     return [
         cmd.if_statement(
-            f"abs(B) <= {B_save}", commands=if_commands, else_commands=[cmd.table_save()]
+            f"abs(B) <= {B_save}",
+            commands=if_commands,
+            else_commands=[cmd.table_save()],
         )
     ]
 
@@ -240,7 +251,9 @@ def run_excitation(
     commands = [cmd.header_comment("Run Excitation")]
     sinc_pulse = cmd.sinc("2 * pi * fc * (t - t0)")
     if use_kc:
-        set_mask = cmd.set_vector("field_mask", "i", "j", "k2", cmd.vector(0, 0, "Bmask"))
+        set_mask = cmd.set_vector(
+            "field_mask", "i", "j", "k2", cmd.vector(0, 0, "Bmask")
+        )
         for_loop3 = cmd.for_loop(
             "k", start=0, condition="nz", step=1, operator="<", commands=[set_mask]
         )
@@ -272,7 +285,9 @@ def run_excitation(
         commands += [
             cmd.set_var(
                 "B_ext",
-                cmd.var_add("B_bias", cmd.var_mul(cmd.var_mul("direction", "amp"), sinc_pulse)),
+                cmd.var_add(
+                    "B_bias", cmd.var_mul(cmd.var_mul("direction", "amp"), sinc_pulse)
+                ),
             )
         ]
 
@@ -289,7 +304,11 @@ def run_excitation(
         cmd.run("t_run - t_step"),
     ]
     if save_m:
-        run_commands = [cmd.set_var("save_m", 1), *run_commands, cmd.set_var("save_m", 0)]
+        run_commands = [
+            cmd.set_var("save_m", 1),
+            *run_commands,
+            cmd.set_var("save_m", 0),
+        ]
     commands += run_commands
     return commands
 
@@ -323,7 +342,11 @@ def excitation_block(
         ypulse=ypulse,
     )
     commands += run_excitation(
-        use_kc=kc is not None, save_vars=save_vars, save_m=save_m, comp=comp, layers=layers
+        use_kc=kc is not None,
+        save_vars=save_vars,
+        save_m=save_m,
+        comp=comp,
+        layers=layers,
     )
 
     return commands
