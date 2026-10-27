@@ -30,7 +30,9 @@ def tableadd_common(regions: list[int] | None = None) -> list[str]:
 
 
 def create_stack_by_name(
-    stack: Iterable[tuple[str, float]], dz: float, l_dict: dict[str, Callable] | None = None
+    stack: Iterable[tuple[str, float]],
+    dz: float,
+    l_dict: dict[str, Callable] | None = None,
 ):
     l_dict = layer_dict if l_dict is None else l_dict
     layer_list = [l_dict[s[0].lower()](s[1]) for s in stack]
@@ -89,8 +91,9 @@ def hysteresis(
             layers=save_layers,
         )
     hyst_commands += extra_commands
-
-    commands += hysteresis_block(B_start, B_stop, B_step, phi, m_initial, hyst_commands)
+    commands += hysteresis_block(
+        B_start, B_stop, B_step, phi, m_initial=m_initial, commands=hyst_commands
+    )
     commands.append(cmd.timestamp())
     return commands
 
